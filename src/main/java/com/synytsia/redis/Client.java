@@ -1,0 +1,36 @@
+package com.synytsia.redis;
+
+import javax.net.SocketFactory;
+import java.io.*;
+import java.util.Scanner;
+
+public class Client {
+
+    public static void main(String[] args) throws IOException {
+        try (final var socket = SocketFactory.getDefault().createSocket("localhost", 25678);
+             final var is = new DataInputStream(socket.getInputStream());
+             final var os = new DataOutputStream(socket.getOutputStream())) {
+
+            final var scanner = new Scanner(System.in);
+            while (true) {
+                final var cliInput = scanner.nextLine();
+                if (cliInput.equals("exit")) {
+                    break;
+                }
+
+                os.writeInt(cliInput.length());
+                final var part1 = cliInput.substring(0, 2);
+                final var part2 = cliInput.substring(2);
+                os.writeBytes(part1);
+                os.flush();
+                os.writeBytes(part2);
+                os.flush();
+
+                final var len = is.readInt();
+                final var msg = new String(is.readNBytes(len));
+                System.out.println("Server len: " + len);
+                System.out.println("Server msg: " + msg);
+            }
+        }
+    }
+}
