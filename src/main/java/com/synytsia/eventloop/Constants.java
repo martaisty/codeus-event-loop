@@ -1,4 +1,4 @@
-package com.synytsia.redis.eventloop;
+package com.synytsia.eventloop;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

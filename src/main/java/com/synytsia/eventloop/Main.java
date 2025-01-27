@@ -1,6 +1,4 @@
-package com.synytsia.redis.eventloop;
-
-import java.nio.ByteBuffer;
+package com.synytsia.eventloop;
 
 public class Main {
 

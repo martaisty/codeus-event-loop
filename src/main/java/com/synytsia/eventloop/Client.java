@@ -1,4 +1,4 @@
-package com.synytsia.redis;
+package com.synytsia.eventloop;
 
 import javax.net.SocketFactory;
 import java.io.*;

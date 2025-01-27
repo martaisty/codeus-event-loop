@@ -1,5 +1,7 @@
-package com.synytsia.redis.eventloop;
+package com.synytsia.eventloop.eventloop;
 
+import com.synytsia.eventloop.ClientConnection;
+import com.synytsia.eventloop.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -42,8 +44,6 @@ public class EventLoop {
 
                     if (key.isAcceptable()) {
                         acceptClient(selector, (ServerSocketChannel) key.channel());
-                    } else if (!key.isValid() || clients.get(key).isWantClose()) {
-                        closeClient(key);
                     } else if (key.isReadable()) {
                         handleRead(key);
                     } else if (key.isWritable()) {
@@ -73,7 +73,7 @@ public class EventLoop {
         final var readSize = client.read(connection.getIncoming());
         if (readSize < 0) {
             log.debug("EOF for client: {}, closing connection", client.getRemoteAddress());
-            connection.setWantClose(true);
+            closeClient(key);
             return;
         }
         log.debug("Read {} bytes from client {}", readSize, client.getRemoteAddress());
@@ -90,12 +90,6 @@ public class EventLoop {
         }
 
         final int msgSize = incoming.getInt(0);
-        if (msgSize > Constants.MAX_MESSAGE_SIZE) {
-            log.error("Message size exceeds limit, closing connection. Maximum allowed: {}, specified in request: {}", Constants.MAX_MESSAGE_SIZE, msgSize);
-            connection.setWantClose(true);
-            return;
-
-        }
         if (incoming.position() - Constants.MESSAGE_LENGTH_SIZE < msgSize) {
             log.trace("Didn't receive full data. Received data length: {}, specified in request: {}", incoming.position(), msgSize);
             return;
@@ -139,6 +133,7 @@ public class EventLoop {
 
     private void closeClient(final SelectionKey key) {
         try (final var client = (SocketChannel) key.channel()) {
+            clients.remove(key);
             log.debug("Closing client: {}", client.getRemoteAddress());
         } catch (IOException e) {
             log.error("Failed to close client");
