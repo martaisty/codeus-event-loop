@@ -19,11 +19,7 @@ public class Client {
                 }
 
                 os.writeInt(cliInput.length());
-                final var part1 = cliInput.substring(0, 2);
-                final var part2 = cliInput.substring(2);
-                os.writeBytes(part1);
-                os.flush();
-                os.writeBytes(part2);
+                os.writeBytes(cliInput);
                 os.flush();
 
                 final var len = is.readInt();
